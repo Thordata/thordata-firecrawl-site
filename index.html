@@ -26,6 +26,32 @@
         <div class="container">
             <h1 class="hero-title">Turn websites into<br>LLM-ready data</h1>
             <p class="hero-subtitle">Power your AI apps with clean web data from any website.<br>It's also open source and Firecrawl-compatible.</p>
+            
+            <!-- Live Demo Playground -->
+            <div class="hero-demo">
+                <div class="demo-tabs">
+                    <button class="demo-tab active" data-format="json">JSON</button>
+                    <button class="demo-tab" data-format="markdown">Markdown</button>
+                    <button class="demo-tab" data-format="html">HTML</button>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-input">
+                        <div class="demo-label">Scrape</div>
+                        <div class="demo-url">https://www.thordata.com</div>
+                    </div>
+                    <div class="demo-output" id="hero-demo-output">
+                        <pre><code id="demo-code">{
+  "url": "https://www.thordata.com",
+  "markdown": "# Thordata\n\nThordata provides AI-native web data infrastructure...",
+  "json": {
+    "title": "Thordata",
+    "description": "AI-native web data infrastructure"
+  }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+
             <div class="hero-actions">
                 <a href="#playground" class="btn btn-primary">Try Playground</a>
                 <a href="#docs" class="btn btn-secondary">View Docs</a>
@@ -34,35 +60,259 @@
         </div>
     </section>
 
+    <!-- Trust Badge -->
+    <section class="trust-badge">
+        <div class="container">
+            <p class="trust-text">Open source • Self-hostable • Firecrawl-compatible</p>
+        </div>
+    </section>
+
     <!-- Features Section -->
     <section id="features" class="features">
         <div class="container">
             <h2 class="section-title">Main Features</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">📄</div>
+            <div class="features-nav">
+                <button class="feature-nav-btn active" data-feature="scrape">Scrape</button>
+                <button class="feature-nav-btn" data-feature="search">Search</button>
+                <button class="feature-nav-btn" data-feature="map">Map</button>
+                <button class="feature-nav-btn" data-feature="crawl">Crawl</button>
+                <button class="feature-nav-btn" data-feature="agent">Agent</button>
+            </div>
+            
+            <div class="feature-detail active" id="feature-scrape">
+                <div class="feature-content">
                     <h3>Scrape</h3>
                     <p>Get LLM-ready data from websites. Markdown, JSON, HTML, screenshots, and more.</p>
+                    <div class="feature-code-tabs">
+                        <button class="code-tab-btn active" data-lang="python">Python</button>
+                        <button class="code-tab-btn" data-lang="curl">cURL</button>
+                        <button class="code-tab-btn" data-lang="js">JavaScript</button>
+                    </div>
+                    <div class="feature-code-content">
+                        <pre id="scrape-python" class="code-block active"><code>from thordata_firecrawl import ThordataCrawl
+
+client = ThordataCrawl(api_key="td-YOUR_API_KEY")
+
+result = client.scrape(
+    url="https://www.thordata.com",
+    formats=["markdown", "json"]
+)
+
+print(result["data"]["markdown"])</code></pre>
+                        <pre id="scrape-curl" class="code-block"><code>curl -X POST "http://localhost:3002/v1/scrape" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://www.thordata.com",
+    "formats": ["markdown", "json"]
+  }'</code></pre>
+                        <pre id="scrape-js" class="code-block"><code>const response = await fetch('http://localhost:3002/v1/scrape', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://www.thordata.com',
+    formats: ['markdown', 'json']
+  })
+});
+
+const data = await response.json();
+console.log(data.data.markdown);</code></pre>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔍</div>
+            </div>
+
+            <div class="feature-detail" id="feature-search">
+                <div class="feature-content">
                     <h3>Search</h3>
                     <p>Search the web and get full content from results. Powered by Thordata SERP API.</p>
+                    <div class="feature-code-tabs">
+                        <button class="code-tab-btn active" data-lang="python">Python</button>
+                        <button class="code-tab-btn" data-lang="curl">cURL</button>
+                        <button class="code-tab-btn" data-lang="js">JavaScript</button>
+                    </div>
+                    <div class="feature-code-content">
+                        <pre id="search-python" class="code-block active"><code>result = client.search(
+    query="Thordata web scraping API",
+    limit=5,
+    engine="google"
+)
+
+for item in result["data"]:
+    print(item["title"], item["url"])</code></pre>
+                        <pre id="search-curl" class="code-block"><code>curl -X POST "http://localhost:3002/v1/search" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "Thordata web scraping API",
+    "limit": 5,
+    "engine": "google"
+  }'</code></pre>
+                        <pre id="search-js" class="code-block"><code>const response = await fetch('http://localhost:3002/v1/search', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    query: 'Thordata web scraping API',
+    limit: 5,
+    engine: 'google'
+  })
+});
+
+const data = await response.json();
+console.log(data.data);</code></pre>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🗺️</div>
+            </div>
+
+            <div class="feature-detail" id="feature-map">
+                <div class="feature-content">
                     <h3>Map</h3>
                     <p>Discover all URLs on a website. Build sitemaps and understand site structure.</p>
+                    <div class="feature-code-tabs">
+                        <button class="code-tab-btn active" data-lang="python">Python</button>
+                        <button class="code-tab-btn" data-lang="curl">cURL</button>
+                        <button class="code-tab-btn" data-lang="js">JavaScript</button>
+                    </div>
+                    <div class="feature-code-content">
+                        <pre id="map-python" class="code-block active"><code>result = client.map(
+    url="https://www.thordata.com"
+)
+
+for url in result["data"]:
+    print(url)</code></pre>
+                        <pre id="map-curl" class="code-block"><code>curl -X POST "http://localhost:3002/v1/map" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://www.thordata.com"
+  }'</code></pre>
+                        <pre id="map-js" class="code-block"><code>const response = await fetch('http://localhost:3002/v1/map', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://www.thordata.com'
+  })
+});
+
+const data = await response.json();
+console.log(data.data);</code></pre>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🕷️</div>
+            </div>
+
+            <div class="feature-detail" id="feature-crawl">
+                <div class="feature-content">
                     <h3>Crawl</h3>
                     <p>Crawl entire websites with BFS traversal. Async jobs with webhook callbacks.</p>
+                    <div class="feature-code-tabs">
+                        <button class="code-tab-btn active" data-lang="python">Python</button>
+                        <button class="code-tab-btn" data-lang="curl">cURL</button>
+                        <button class="code-tab-btn" data-lang="js">JavaScript</button>
+                    </div>
+                    <div class="feature-code-content">
+                        <pre id="crawl-python" class="code-block active"><code>job = client.crawl(
+    url="https://www.thordata.com",
+    limit=10,
+    formats=["markdown"]
+)
+
+# Check job status
+status = client.get_crawl_status(job["jobId"])
+print(status)</code></pre>
+                        <pre id="crawl-curl" class="code-block"><code>curl -X POST "http://localhost:3002/v1/crawl" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://www.thordata.com",
+    "limit": 10,
+    "formats": ["markdown"]
+  }'</code></pre>
+                        <pre id="crawl-js" class="code-block"><code>const response = await fetch('http://localhost:3002/v1/crawl', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://www.thordata.com',
+    limit: 10,
+    formats: ['markdown']
+  })
+});
+
+const job = await response.json();
+console.log(job.jobId);</code></pre>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🤖</div>
+            </div>
+
+            <div class="feature-detail" id="feature-agent">
+                <div class="feature-content">
                     <h3>Agent</h3>
                     <p>Extract structured data using LLM prompts. Schema-based extraction with AI.</p>
+                    <div class="feature-code-tabs">
+                        <button class="code-tab-btn active" data-lang="python">Python</button>
+                        <button class="code-tab-btn" data-lang="curl">cURL</button>
+                        <button class="code-tab-btn" data-lang="js">JavaScript</button>
+                    </div>
+                    <div class="feature-code-content">
+                        <pre id="agent-python" class="code-block active"><code>result = client.agent(
+    prompt="Extract company name and description",
+    urls=["https://www.thordata.com"],
+    schema={
+        "type": "object",
+        "properties": {
+            "company_name": {"type": "string"},
+            "description": {"type": "string"}
+        }
+    }
+)
+
+print(result["data"])</code></pre>
+                        <pre id="agent-curl" class="code-block"><code>curl -X POST "http://localhost:3002/v1/agent" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Extract company name and description",
+    "urls": ["https://www.thordata.com"],
+    "schema": {
+      "type": "object",
+      "properties": {
+        "company_name": {"type": "string"},
+        "description": {"type": "string"}
+      }
+    }
+  }'</code></pre>
+                        <pre id="agent-js" class="code-block"><code>const response = await fetch('http://localhost:3002/v1/agent', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    prompt: 'Extract company name and description',
+    urls: ['https://www.thordata.com'],
+    schema: {
+      type: 'object',
+      properties: {
+        company_name: { type: 'string' },
+        description: { type: 'string' }
+      }
+    }
+  })
+});
+
+const data = await response.json();
+console.log(data.data);</code></pre>
+                    </div>
                 </div>
             </div>
         </div>

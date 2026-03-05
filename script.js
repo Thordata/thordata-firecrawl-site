@@ -134,6 +134,96 @@ ${formatted}
     }
 }
 
+// Hero Demo Tab Switching
+document.addEventListener('DOMContentLoaded', function() {
+    const demoTabs = document.querySelectorAll('.demo-tab');
+    const demoCode = document.getElementById('demo-code');
+    
+    const demoContent = {
+        json: `{
+  "url": "https://www.thordata.com",
+  "markdown": "# Thordata\\n\\nThordata provides AI-native web data infrastructure...",
+  "json": {
+    "title": "Thordata",
+    "description": "AI-native web data infrastructure"
+  },
+  "screenshot": "https://api.thordata.com/screenshot/..."
+}`,
+        markdown: `# Thordata
+
+Thordata provides AI-native web data infrastructure for building powerful AI applications.
+
+## Features
+
+- Web Scraping API
+- SERP API
+- Scraping Browser
+- Proxy Network
+
+## Get Started
+
+Visit [thordata.com](https://www.thordata.com) to learn more.`,
+        html: `<html>
+<head>
+  <title>Thordata - AI-Native Web Data Infrastructure</title>
+</head>
+<body>
+  <h1>Thordata</h1>
+  <p>AI-native web data infrastructure</p>
+</body>
+</html>`
+    };
+    
+    demoTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            demoTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            const format = this.getAttribute('data-format');
+            demoCode.textContent = demoContent[format] || demoContent.json;
+        });
+    });
+    
+    // Feature Navigation
+    const featureNavBtns = document.querySelectorAll('.feature-nav-btn');
+    const featureDetails = document.querySelectorAll('.feature-detail');
+    
+    featureNavBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const feature = this.getAttribute('data-feature');
+            
+            // Update nav buttons
+            featureNavBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update feature details
+            featureDetails.forEach(d => d.classList.remove('active'));
+            document.getElementById(`feature-${feature}`).classList.add('active');
+        });
+    });
+    
+    // Feature Code Tab Switching
+    const codeTabBtns = document.querySelectorAll('.code-tab-btn');
+    
+    codeTabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const lang = this.getAttribute('data-lang');
+            const featureDetail = this.closest('.feature-detail');
+            const codeBlocks = featureDetail.querySelectorAll('.code-block');
+            const tabs = featureDetail.querySelectorAll('.code-tab-btn');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            codeBlocks.forEach(block => {
+                block.classList.remove('active');
+                if (block.id.includes(lang)) {
+                    block.classList.add('active');
+                }
+            });
+        });
+    });
+});
+
 // Smooth scrolling
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
