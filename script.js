@@ -73,13 +73,31 @@ document.getElementById('endpoint').addEventListener('change', function() {
     }
 });
 
-// Initialize with default example
-document.addEventListener('DOMContentLoaded', function() {
+// Load example data
+function loadExample() {
     const endpoint = document.getElementById('endpoint').value;
     const example = endpointExamples[endpoint];
     if (example) {
         document.getElementById('request-body').value = JSON.stringify(example, null, 2);
+        
+        // Show success message
+        const textarea = document.getElementById('request-body');
+        const hint = textarea.nextElementSibling;
+        if (hint && hint.classList.contains('hint')) {
+            const originalText = hint.textContent;
+            hint.textContent = '✅ Example loaded! Now click "Send Request" or press Ctrl/Cmd + Enter';
+            hint.style.color = 'var(--success-color)';
+            setTimeout(() => {
+                hint.textContent = originalText;
+                hint.style.color = '';
+            }, 3000);
+        }
     }
+}
+
+// Initialize with default example
+document.addEventListener('DOMContentLoaded', function() {
+    loadExample();
 });
 
 // Send API request
@@ -110,7 +128,7 @@ async function sendRequest() {
     }
     
     // Show loading state with spinner
-    responseOutput.innerHTML = '<code class="loading">⏳ Loading...</code>';
+    responseOutput.innerHTML = '<code class="loading">⏳ Sending request... Please wait</code>';
     
     // Disable button during request
     const sendBtn = document.querySelector('.playground-controls .btn-primary');
@@ -320,6 +338,12 @@ function addCopyButtons() {
         pre.style.position = 'relative';
         pre.appendChild(copyBtn);
     });
+}
+
+// Clear response
+function clearResponse() {
+    const responseOutput = document.getElementById('response-output');
+    responseOutput.innerHTML = '<code class="response-placeholder">// 1. Enter your API Key above\n// 2. Click "Load Example" to auto-fill request\n// 3. Click "Send Request" or press Ctrl/Cmd + Enter\n// \n// Response will appear here...</code>';
 }
 
 // Smooth scrolling

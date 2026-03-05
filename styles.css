@@ -169,17 +169,27 @@ body {
 
 .demo-output {
     color: white;
+    text-align: left;
+    overflow-x: auto;
 }
 
 .demo-output pre {
     background: transparent;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.95);
     padding: 0;
     margin: 0;
+    text-align: left;
+    line-height: 1.8;
+    font-size: 0.9rem;
+    white-space: pre;
+    overflow-x: auto;
 }
 
 .demo-output code {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.95);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
+    display: block;
+    text-align: left;
 }
 
 .hero-actions {
@@ -517,6 +527,41 @@ code.loading {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+.playground-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.playground-header h3 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 1.25rem;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.playground-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.playground-actions .btn {
+    flex: 1;
+}
+
+.required {
+    color: var(--error-color);
+    font-weight: 600;
+}
+
 .control-group {
     margin-bottom: 1.5rem;
 }
@@ -567,14 +612,36 @@ code.loading {
     cursor: not-allowed;
 }
 
+.response-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.response-header h3 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
 #response-output {
     min-height: 200px;
     max-height: 600px;
     overflow-y: auto;
+    text-align: left;
 }
 
 #response-output code {
     color: var(--code-text);
+    text-align: left;
+    display: block;
+}
+
+#response-output code.response-placeholder {
+    color: var(--text-secondary);
+    font-style: italic;
+    line-height: 1.8;
 }
 
 /* Core Principles Section */
@@ -780,6 +847,20 @@ code.loading {
     
     .playground-container {
         grid-template-columns: 1fr;
+    }
+    
+    .playground-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .playground-actions {
+        flex-direction: column;
+    }
+    
+    .playground-actions .btn {
+        width: 100%;
     }
     
     .nav-links {

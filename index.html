@@ -429,13 +429,20 @@ console.log(data.data.markdown);</code></pre>
             
             <div class="playground-container">
                 <div class="playground-controls">
+                    <div class="playground-header">
+                        <h3>Quick Start</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="loadExample()">📋 Load Example</button>
+                    </div>
+                    
                     <div class="control-group">
-                        <label for="api-key">API Key:</label>
+                        <label for="api-key">API Key: <span class="required">*</span></label>
                         <input type="password" id="api-key" placeholder="td-YOUR_API_KEY" />
+                        <small class="hint">Required: Your Thordata API key</small>
                     </div>
                     <div class="control-group">
                         <label for="api-url">API URL:</label>
                         <input type="text" id="api-url" value="http://localhost:3002" placeholder="http://localhost:3002" />
+                        <small class="hint">Default: http://localhost:3002 (change if using remote server)</small>
                     </div>
                     <div class="control-group">
                         <label for="endpoint">Endpoint:</label>
@@ -452,13 +459,23 @@ console.log(data.data.markdown);</code></pre>
                     <div class="control-group">
                         <label for="request-body">Request Body (JSON):</label>
                         <textarea id="request-body" rows="10" placeholder='{"url": "https://example.com", "formats": ["markdown"]}'></textarea>
-                        <small class="hint">Tip: Press Ctrl/Cmd + Enter to send request</small>
+                        <small class="hint">💡 Tip: Press Ctrl/Cmd + Enter to send request | Click "Load Example" to auto-fill</small>
                     </div>
-                    <button class="btn btn-primary" onclick="sendRequest()">Send Request</button>
+                    <div class="playground-actions">
+                        <button class="btn btn-primary" onclick="sendRequest()">🚀 Send Request</button>
+                        <button class="btn btn-secondary" onclick="loadExample()">📋 Load Example</button>
+                    </div>
                 </div>
                 <div class="playground-response">
-                    <h3>Response:</h3>
-                    <pre id="response-output"><code>// Click "Send Request" to see the response</code></pre>
+                    <div class="response-header">
+                        <h3>Response:</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="clearResponse()">Clear</button>
+                    </div>
+                    <pre id="response-output"><code class="response-placeholder">// 1. Enter your API Key above
+// 2. Click "Load Example" to auto-fill request
+// 3. Click "Send Request" or press Ctrl/Cmd + Enter
+// 
+// Response will appear here...</code></pre>
                 </div>
             </div>
         </div>
