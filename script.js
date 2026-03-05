@@ -1,5 +1,5 @@
-// Tab switching
-function showTab(tabName) {
+// Tab switching for Quick Start section
+function showTab(tabName, event) {
     // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
@@ -11,10 +11,15 @@ function showTab(tabName) {
     });
     
     // Show selected tab
-    document.getElementById(tabName).classList.add('active');
+    const targetTab = document.getElementById(tabName);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
     
     // Add active class to clicked button
-    event.target.classList.add('active');
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
 }
 
 // Playground request handling
@@ -104,33 +109,77 @@ async function sendRequest() {
         return;
     }
     
-    // Show loading state
-    responseOutput.innerHTML = '<code>Loading...</code>';
+    // Show loading state with spinner
+    responseOutput.innerHTML = '<code class="loading">⏳ Loading...</code>';
+    
+    // Disable button during request
+    const sendBtn = document.querySelector('.playground-controls .btn-primary');
+    const originalText = sendBtn.textContent;
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending...';
     
     try {
         const url = `${apiUrl}${endpoint}`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+        
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            signal: controller.signal
         });
         
-        const data = await response.json();
+        clearTimeout(timeoutId);
+        
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            const text = await response.text();
+            responseOutput.innerHTML = `<code style="color: var(--error-color);">
+Status: ${response.status} ${response.statusText}
+
+Response (not JSON):
+${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
+</code>`;
+            sendBtn.disabled = false;
+            sendBtn.textContent = originalText;
+            return;
+        }
         
         // Format response
         const formatted = JSON.stringify(data, null, 2);
         const statusClass = response.ok ? 'var(--success-color)' : 'var(--error-color)';
+        const statusIcon = response.ok ? '✅' : '❌';
         
         responseOutput.innerHTML = `<code style="color: ${statusClass};">
-Status: ${response.status} ${response.statusText}
+${statusIcon} Status: ${response.status} ${response.statusText}
 
 ${formatted}
 </code>`;
     } catch (error) {
-        responseOutput.innerHTML = `<code style="color: var(--error-color);">Error: ${error.message}\n\nMake sure:\n1. The API server is running\n2. The API URL is correct\n3. CORS is enabled (for cross-origin requests)</code>`;
+        let errorMsg = error.message;
+        if (error.name === 'AbortError') {
+            errorMsg = 'Request timeout (30s). The server may be slow or unreachable.';
+        }
+        
+        responseOutput.innerHTML = `<code style="color: var(--error-color);">
+❌ Error: ${errorMsg}
+
+Troubleshooting:
+1. Check if the API server is running
+2. Verify the API URL is correct
+3. Ensure CORS is enabled (for cross-origin requests)
+4. Check your API key is valid
+5. Verify the request body is valid JSON
+</code>`;
+    } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = originalText;
     }
 }
 
@@ -224,6 +273,55 @@ Visit [thordata.com](https://www.thordata.com) to learn more.`,
     });
 });
 
+// Copy code functionality
+function addCopyButtons() {
+    document.querySelectorAll('pre code').forEach(codeBlock => {
+        const pre = codeBlock.parentElement;
+        if (pre.querySelector('.copy-btn')) return; // Already has copy button
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.textContent = 'Copy';
+        copyBtn.title = 'Copy code';
+        
+        copyBtn.addEventListener('click', async function() {
+            const text = codeBlock.textContent;
+            try {
+                await navigator.clipboard.writeText(text);
+                copyBtn.textContent = 'Copied!';
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    copyBtn.textContent = 'Copied!';
+                    copyBtn.classList.add('copied');
+                    setTimeout(() => {
+                        copyBtn.textContent = 'Copy';
+                        copyBtn.classList.remove('copied');
+                    }, 2000);
+                } catch (e) {
+                    copyBtn.textContent = 'Failed';
+                }
+                document.body.removeChild(textarea);
+            }
+        });
+        
+        pre.style.position = 'relative';
+        pre.appendChild(copyBtn);
+    });
+}
+
 // Smooth scrolling
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -235,5 +333,26 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 block: 'start'
             });
         }
+    });
+});
+
+// Initialize copy buttons after DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    addCopyButtons();
+    
+    // Re-add copy buttons when feature tabs change
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const target = mutation.target;
+                if (target.classList.contains('feature-detail') && target.classList.contains('active')) {
+                    setTimeout(addCopyButtons, 100);
+                }
+            }
+        });
+    });
+    
+    document.querySelectorAll('.feature-detail').forEach(detail => {
+        observer.observe(detail, { attributes: true });
     });
 });
