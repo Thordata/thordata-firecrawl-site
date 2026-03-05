@@ -5,7 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thordata Firecrawl - Turn websites into LLM-ready data</title>
     <meta name="description" content="Power your AI apps with clean web data from any website. Firecrawl-compatible API for scraping, crawling, searching, and structured extraction.">
+    <meta name="keywords" content="web scraping, web crawling, LLM data, AI data, firecrawl, thordata, API, scraping, crawling">
+    <meta name="author" content="Thordata">
+    <meta property="og:title" content="Thordata Firecrawl - Turn websites into LLM-ready data">
+    <meta property="og:description" content="Power your AI apps with clean web data from any website. Firecrawl-compatible API.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thordata.github.io/thordata-firecrawl-site/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Thordata Firecrawl">
+    <meta name="twitter:description" content="Turn websites into LLM-ready data">
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
 </head>
 <body>
     <!-- Navigation -->
@@ -442,6 +452,7 @@ console.log(data.data.markdown);</code></pre>
                     <div class="control-group">
                         <label for="request-body">Request Body (JSON):</label>
                         <textarea id="request-body" rows="10" placeholder='{"url": "https://example.com", "formats": ["markdown"]}'></textarea>
+                        <small class="hint">Tip: Press Ctrl/Cmd + Enter to send request</small>
                     </div>
                     <button class="btn btn-primary" onclick="sendRequest()">Send Request</button>
                 </div>
@@ -522,12 +533,34 @@ console.log(data.data.markdown);</code></pre>
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 Thordata. Open source and self-hostable.</p>
-            <p>
-                <a href="https://github.com/Thordata/thordata-firecrawl" target="_blank">GitHub</a> |
-                <a href="https://github.com/Thordata/thordata-firecrawl/blob/main/README.md" target="_blank">Documentation</a> |
-                <a href="https://github.com/Thordata/thordata-firecrawl/blob/main/SELF_HOST.md" target="_blank">Self-Hosting</a>
-            </p>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Thordata Firecrawl</h4>
+                    <p>Turn websites into LLM-ready data with a single API.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://github.com/Thordata/thordata-firecrawl" target="_blank">GitHub</a></li>
+                        <li><a href="https://github.com/Thordata/thordata-firecrawl/blob/main/README.md" target="_blank">Documentation</a></li>
+                        <li><a href="https://github.com/Thordata/thordata-firecrawl/blob/main/SELF_HOST.md" target="_blank">Self-Hosting</a></li>
+                        <li><a href="#playground">Playground</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Features</h4>
+                    <ul>
+                        <li><a href="#features">Scrape</a></li>
+                        <li><a href="#features">Search</a></li>
+                        <li><a href="#features">Map</a></li>
+                        <li><a href="#features">Crawl</a></li>
+                        <li><a href="#features">Agent</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Thordata. Open source and self-hostable.</p>
+            </div>
         </div>
     </footer>
 

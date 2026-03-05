@@ -355,4 +355,28 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.feature-detail').forEach(detail => {
         observer.observe(detail, { attributes: true });
     });
+    
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + K to focus on API key input
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            const apiKeyInput = document.getElementById('api-key');
+            if (apiKeyInput && document.activeElement !== apiKeyInput) {
+                e.preventDefault();
+                apiKeyInput.focus();
+            }
+        }
+    });
+    
+    // Add enter key support for playground
+    const requestBody = document.getElementById('request-body');
+    if (requestBody) {
+        requestBody.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter to send request
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                sendRequest();
+            }
+        });
+    }
 });
