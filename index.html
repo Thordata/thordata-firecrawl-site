@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thordata Firecrawl - Turn websites into LLM-ready data</title>
+    <meta name="description" content="Power your AI apps with clean web data from any website. Firecrawl-compatible API for scraping, crawling, searching, and structured extraction.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">🔥 Thordata Firecrawl</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#docs">Docs</a>
+                <a href="#playground">Playground</a>
+                <a href="https://github.com/Thordata/thordata-firecrawl" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="hero-title">Turn websites into<br>LLM-ready data</h1>
+            <p class="hero-subtitle">Power your AI apps with clean web data from any website.<br>It's also open source and Firecrawl-compatible.</p>
+            <div class="hero-actions">
+                <a href="#playground" class="btn btn-primary">Try Playground</a>
+                <a href="#docs" class="btn btn-secondary">View Docs</a>
+                <a href="https://github.com/Thordata/thordata-firecrawl" target="_blank" class="btn btn-outline">GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Main Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📄</div>
+                    <h3>Scrape</h3>
+                    <p>Get LLM-ready data from websites. Markdown, JSON, HTML, screenshots, and more.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Search</h3>
+                    <p>Search the web and get full content from results. Powered by Thordata SERP API.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🗺️</div>
+                    <h3>Map</h3>
+                    <p>Discover all URLs on a website. Build sitemaps and understand site structure.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🕷️</div>
+                    <h3>Crawl</h3>
+                    <p>Crawl entire websites with BFS traversal. Async jobs with webhook callbacks.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>Agent</h3>
+                    <p>Extract structured data using LLM prompts. Schema-based extraction with AI.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Start Section -->
+    <section id="docs" class="docs">
+        <div class="container">
+            <h2 class="section-title">Quick Start</h2>
+            
+            <div class="code-tabs">
+                <button class="tab-btn active" onclick="showTab('python')">Python</button>
+                <button class="tab-btn" onclick="showTab('curl')">cURL</button>
+                <button class="tab-btn" onclick="showTab('js')">JavaScript</button>
+            </div>
+
+            <div id="python" class="tab-content active">
+                <h3>Install</h3>
+                <pre><code>pip install thordata-firecrawl</code></pre>
+                <h3>Scrape Example</h3>
+                <pre><code>from thordata_firecrawl import ThordataCrawl
+
+client = ThordataCrawl(api_key="td-YOUR_API_KEY")
+
+result = client.scrape(
+    url="https://www.thordata.com",
+    formats=["markdown"]
+)
+
+print(result["data"]["markdown"])</code></pre>
+            </div>
+
+            <div id="curl" class="tab-content">
+                <h3>Scrape Example</h3>
+                <pre><code>curl -X POST "http://localhost:3002/v1/scrape" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://www.thordata.com",
+    "formats": ["markdown"]
+  }'</code></pre>
+                <h3>Crawl Example</h3>
+                <pre><code>curl -X POST "http://localhost:3002/v1/crawl" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://www.thordata.com",
+    "limit": 10,
+    "formats": ["markdown"]
+  }'</code></pre>
+            </div>
+
+            <div id="js" class="tab-content">
+                <h3>Scrape Example</h3>
+                <pre><code>const response = await fetch('http://localhost:3002/v1/scrape', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://www.thordata.com',
+    formats: ['markdown']
+  })
+});
+
+const data = await response.json();
+console.log(data.data.markdown);</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- Playground Section -->
+    <section id="playground" class="playground">
+        <div class="container">
+            <h2 class="section-title">Interactive Playground</h2>
+            <p class="playground-note">⚠️ Enter your own THORDATA_API_KEY to test the API. Your key is only used for API calls and never stored.</p>
+            
+            <div class="playground-container">
+                <div class="playground-controls">
+                    <div class="control-group">
+                        <label for="api-key">API Key:</label>
+                        <input type="password" id="api-key" placeholder="td-YOUR_API_KEY" />
+                    </div>
+                    <div class="control-group">
+                        <label for="api-url">API URL:</label>
+                        <input type="text" id="api-url" value="http://localhost:3002" placeholder="http://localhost:3002" />
+                    </div>
+                    <div class="control-group">
+                        <label for="endpoint">Endpoint:</label>
+                        <select id="endpoint">
+                            <option value="/v1/scrape">POST /v1/scrape</option>
+                            <option value="/v1/batch-scrape">POST /v1/batch-scrape</option>
+                            <option value="/v1/map">POST /v1/map</option>
+                            <option value="/v1/search">POST /v1/search</option>
+                            <option value="/v1/search-and-scrape">POST /v1/search-and-scrape</option>
+                            <option value="/v1/crawl">POST /v1/crawl</option>
+                            <option value="/v1/agent">POST /v1/agent</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="request-body">Request Body (JSON):</label>
+                        <textarea id="request-body" rows="10" placeholder='{"url": "https://example.com", "formats": ["markdown"]}'></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="sendRequest()">Send Request</button>
+                </div>
+                <div class="playground-response">
+                    <h3>Response:</h3>
+                    <pre id="response-output"><code>// Click "Send Request" to see the response</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Thordata. Open source and self-hostable.</p>
+            <p>
+                <a href="https://github.com/Thordata/thordata-firecrawl" target="_blank">GitHub</a> |
+                <a href="https://github.com/Thordata/thordata-firecrawl/blob/main/README.md" target="_blank">Documentation</a> |
+                <a href="https://github.com/Thordata/thordata-firecrawl/blob/main/SELF_HOST.md" target="_blank">Self-Hosting</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
