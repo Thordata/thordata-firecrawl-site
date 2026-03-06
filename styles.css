@@ -807,6 +807,12 @@ code.loading {
     flex: 1;
 }
 
+#copy-curl-btn.copied {
+    background: var(--success-color);
+    border-color: var(--success-color);
+    color: white;
+}
+
 .required {
     color: var(--error-color);
     font-weight: 600;

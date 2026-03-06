@@ -100,6 +100,36 @@ document.addEventListener('DOMContentLoaded', function() {
     loadExample();
 });
 
+function buildCurrentCurl() {
+    const apiKey = document.getElementById('api-key').value.trim() || 'YOUR_API_KEY';
+    const apiUrl = document.getElementById('api-url').value.trim() || 'https://thordata-firecrawl-api.onrender.com';
+    const endpoint = document.getElementById('endpoint').value;
+    const requestBody = document.getElementById('request-body').value.trim() || '{}';
+
+    return `curl -X POST "${apiUrl}${endpoint}" \\
+  -H "Authorization: Bearer ${apiKey}" \\
+  -H "Content-Type: application/json" \\
+  -d '${requestBody.replace(/'/g, "'\\''")}'`;
+}
+
+function copyCurrentCurl() {
+    const curl = buildCurrentCurl();
+    navigator.clipboard.writeText(curl).then(() => {
+        const btn = document.getElementById('copy-curl-btn');
+        if (btn) {
+            const original = btn.textContent;
+            btn.textContent = '✅ Copied cURL';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = original;
+                btn.classList.remove('copied');
+            }, 1800);
+        }
+    }).catch(() => {
+        alert('Copy failed. Please copy manually:\n\n' + curl);
+    });
+}
+
 // Send API request
 async function sendRequest() {
     const apiKey = document.getElementById('api-key').value.trim();
