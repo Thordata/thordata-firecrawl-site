@@ -95,9 +95,45 @@ function loadExample() {
     }
 }
 
-// Initialize with default example
+const STORAGE_KEY = 'thordata_playground_state_v1';
+
+function savePlaygroundState() {
+    const state = {
+        apiUrl: document.getElementById('api-url')?.value || '',
+        endpoint: document.getElementById('endpoint')?.value || '/v1/scrape',
+        requestBody: document.getElementById('request-body')?.value || ''
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function restorePlaygroundState() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const state = JSON.parse(raw);
+        if (state.apiUrl) document.getElementById('api-url').value = state.apiUrl;
+        if (state.endpoint) document.getElementById('endpoint').value = state.endpoint;
+        if (state.requestBody) document.getElementById('request-body').value = state.requestBody;
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+// Initialize playground defaults
 document.addEventListener('DOMContentLoaded', function() {
-    loadExample();
+    const restored = restorePlaygroundState();
+    if (!restored) {
+        loadExample();
+    }
+
+    ['api-url', 'endpoint', 'request-body'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', savePlaygroundState);
+            el.addEventListener('change', savePlaygroundState);
+        }
+    });
 });
 
 function buildCurrentCurl() {
@@ -167,6 +203,7 @@ async function sendRequest() {
     sendBtn.textContent = 'Sending...';
     
     try {
+        const startedAt = performance.now();
         const url = `${apiUrl}${endpoint}`;
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
@@ -220,10 +257,12 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
             }
         }
         
+        const elapsedMs = Math.round(performance.now() - startedAt);
+
         // Build response HTML with format tabs
         let responseHtml = `
 <div class="response-status" style="color: ${statusClass}; margin-bottom: 1rem;">
-    ${statusIcon} Status: ${response.status} ${response.statusText}
+    ${statusIcon} Status: ${response.status} ${response.statusText} · ${elapsedMs} ms
 </div>`;
 
         // Helpful guidance for common HTTP errors

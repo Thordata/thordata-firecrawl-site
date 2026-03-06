@@ -508,6 +508,12 @@ console.log(data.data.markdown);</code></pre>
                         <button class="btn btn-secondary" onclick="loadExample()">📋 Load Example</button>
                         <button class="btn btn-secondary" id="copy-curl-btn" onclick="copyCurrentCurl()">🧩 Copy cURL</button>
                     </div>
+                    <div class="playground-error-guide">
+                        <strong>Quick Error Guide:</strong>
+                        <span><code>401/403</code> API key invalid or missing</span>
+                        <span><code>429</code> Rate limited, retry later</span>
+                        <span><code>5xx</code> Server/cold start, retry in 5-10s</span>
+                    </div>
                 </div>
                 <div class="playground-response">
                     <div class="response-header">
