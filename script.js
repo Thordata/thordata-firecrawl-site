@@ -444,7 +444,7 @@ function addCopyButtons() {
 // Clear response
 function clearResponse() {
     const responseOutput = document.getElementById('response-output');
-    responseOutput.innerHTML = '<code class="response-placeholder">// 1. Enter your API Key above\n// 2. Click "Load Example" to auto-fill request\n// 3. Click "Send Request" or press Ctrl/Cmd + Enter\n// \n// Response will appear here...</code>';
+    responseOutput.innerHTML = '<pre><code class="response-placeholder">// 1. Enter your API Key above\n// 2. Click "Load Example" to auto-fill request\n// 3. Click "Send Request" or press Ctrl/Cmd + Enter\n// \n// Response will appear here...</code></pre>';
     window.lastResponseData = null;
 }
 
