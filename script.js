@@ -166,6 +166,92 @@ function copyCurrentCurl() {
     });
 }
 
+async function runPreflightCheck() {
+    const apiKey = document.getElementById('api-key').value.trim();
+    const apiUrl = document.getElementById('api-url').value.trim();
+    const responseOutput = document.getElementById('response-output');
+    const preflightBtn = document.getElementById('preflight-btn');
+
+    if (!apiKey || !apiUrl) {
+        responseOutput.innerHTML = '<code style="color: var(--error-color);">Preflight failed: please fill API key and API URL first.</code>';
+        return;
+    }
+
+    const original = preflightBtn ? preflightBtn.textContent : '';
+    if (preflightBtn) {
+        preflightBtn.disabled = true;
+        preflightBtn.textContent = 'Checking...';
+    }
+
+    const startedAt = performance.now();
+    try {
+        const healthResp = await fetch(`${apiUrl}/health`);
+        const healthText = await healthResp.text();
+        const elapsed = Math.round(performance.now() - startedAt);
+
+        let checkResp;
+        try {
+            checkResp = await fetch(`${apiUrl}/v1/scrape`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url: 'https://www.thordata.com', formats: ['json'] })
+            });
+        } catch (e) {
+            responseOutput.innerHTML = `<code style="color: var(--error-color);">❌ Preflight failed: ${e.message}</code>`;
+            return;
+        }
+
+        const authOk = checkResp.status !== 401 && checkResp.status !== 403;
+        const statusColor = authOk ? 'var(--success-color)' : 'var(--error-color)';
+        const statusIcon = authOk ? '✅' : '❌';
+
+        responseOutput.innerHTML = `<code style="color: ${statusColor};">
+${statusIcon} Preflight Result
+- /health: ${healthResp.status} (${elapsed} ms)
+- auth check (/v1/scrape): ${checkResp.status}
+- health body: ${healthText.substring(0, 120)}${healthText.length > 120 ? '...' : ''}
+
+${authOk ? 'Ready to send full requests.' : 'Auth may be invalid. Get API key from https://dashboard.thordata.com'}
+</code>`;
+    } catch (err) {
+        responseOutput.innerHTML = `<code style="color: var(--error-color);">❌ Preflight failed: ${err.message}</code>`;
+    } finally {
+        if (preflightBtn) {
+            preflightBtn.disabled = false;
+            preflightBtn.textContent = original;
+        }
+    }
+}
+
+function copyResponseJson() {
+    const btn = document.getElementById('copy-response-btn');
+    if (!window.lastResponseData || !window.lastResponseData.json) {
+        if (btn) {
+            const original = btn.textContent;
+            btn.textContent = 'No JSON Yet';
+            setTimeout(() => {
+                btn.textContent = original;
+            }, 1200);
+        }
+        return;
+    }
+
+    navigator.clipboard.writeText(window.lastResponseData.json).then(() => {
+        if (btn) {
+            const original = btn.textContent;
+            btn.textContent = '✅ Copied';
+            setTimeout(() => {
+                btn.textContent = original;
+            }, 1500);
+        }
+    }).catch(() => {
+        alert('Copy failed.');
+    });
+}
+
 // Send API request
 async function sendRequest() {
     const apiKey = document.getElementById('api-key').value.trim();

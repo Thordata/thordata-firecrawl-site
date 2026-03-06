@@ -898,6 +898,12 @@ code.loading {
     margin-bottom: 1rem;
 }
 
+.response-header-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
 .response-header h3 {
     margin: 0;
     color: var(--text-color);

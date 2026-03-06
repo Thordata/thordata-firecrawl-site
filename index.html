@@ -506,6 +506,7 @@ console.log(data.data.markdown);</code></pre>
                     <div class="playground-actions">
                         <button class="btn btn-primary" onclick="sendRequest()">🚀 Send Request</button>
                         <button class="btn btn-secondary" onclick="loadExample()">📋 Load Example</button>
+                        <button class="btn btn-secondary" id="preflight-btn" onclick="runPreflightCheck()">🩺 Preflight Check</button>
                         <button class="btn btn-secondary" id="copy-curl-btn" onclick="copyCurrentCurl()">🧩 Copy cURL</button>
                     </div>
                     <div class="playground-error-guide">
@@ -518,7 +519,10 @@ console.log(data.data.markdown);</code></pre>
                 <div class="playground-response">
                     <div class="response-header">
                         <h3>Response:</h3>
-                        <button class="btn btn-secondary btn-sm" onclick="clearResponse()">Clear</button>
+                        <div class="response-header-actions">
+                            <button class="btn btn-secondary btn-sm" id="copy-response-btn" onclick="copyResponseJson()">Copy JSON</button>
+                            <button class="btn btn-secondary btn-sm" onclick="clearResponse()">Clear</button>
+                        </div>
                     </div>
                     <div id="response-output">
                         <pre><code class="response-placeholder">// 1. Enter your API Key above
