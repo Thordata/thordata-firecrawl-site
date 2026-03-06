@@ -302,10 +302,12 @@ Troubleshooting:
     }
 }
 
-// Hero Demo Tab Switching
+// Hero Demo Tab Switching with Animation
 document.addEventListener('DOMContentLoaded', function() {
     const demoTabs = document.querySelectorAll('.demo-tab');
     const demoCode = document.getElementById('demo-code');
+    const demoStatus = document.getElementById('demo-status');
+    const demoFormatBadge = document.getElementById('demo-format-badge');
     
     const demoContent = {
         json: `{
@@ -342,14 +344,77 @@ Visit [thordata.com](https://www.thordata.com) to learn more.`,
 </html>`
     };
     
+    const formatBadges = {
+        json: '[ .JSON ]',
+        markdown: '[ .MD ]',
+        html: '[ .HTML ]'
+    };
+    
+    // Simulate scraping animation
+    function simulateScraping(format) {
+        demoStatus.classList.remove('completed');
+        demoStatus.querySelector('.status-text').textContent = 'Scraping...';
+        
+        setTimeout(() => {
+            demoStatus.classList.add('completed');
+            demoStatus.querySelector('.status-text').textContent = 'Completed';
+            demoCode.textContent = demoContent[format] || demoContent.json;
+            
+            setTimeout(() => {
+                demoStatus.classList.remove('completed');
+                demoStatus.querySelector('.status-text').textContent = 'Scraping...';
+            }, 2000);
+        }, 1500);
+    }
+    
     demoTabs.forEach(tab => {
         tab.addEventListener('click', function() {
             demoTabs.forEach(t => t.classList.remove('active'));
             this.classList.add('active');
             const format = this.getAttribute('data-format');
-            demoCode.textContent = demoContent[format] || demoContent.json;
+            
+            // Update format badge
+            if (demoFormatBadge) {
+                demoFormatBadge.textContent = formatBadges[format] || '[ .JSON ]';
+            }
+            
+            // Simulate scraping
+            simulateScraping(format);
         });
     });
+    
+    // Initial animation
+    setTimeout(() => simulateScraping('json'), 500);
+    
+    // Auto-cycle demo (optional)
+    let currentFormat = 0;
+    const formats = ['json', 'markdown', 'html'];
+    setInterval(() => {
+        if (document.hidden) return; // Don't animate when tab is hidden
+        currentFormat = (currentFormat + 1) % formats.length;
+        const format = formats[currentFormat];
+        const tab = document.querySelector(`.demo-tab[data-format="${format}"]`);
+        if (tab) {
+            tab.click();
+        }
+    }, 8000);
+    
+    // Load GitHub stars
+    fetch('https://api.github.com/repos/Thordata/thordata-firecrawl')
+        .then(response => response.json())
+        .then(data => {
+            const starsEl = document.getElementById('github-stars');
+            if (starsEl && data.stargazers_count) {
+                const count = data.stargazers_count;
+                starsEl.textContent = count >= 1000 ? (count / 1000).toFixed(1) + 'K' : count;
+            }
+        })
+        .catch(err => {
+            const starsEl = document.getElementById('github-stars');
+            if (starsEl) {
+                starsEl.textContent = '⭐';
+            }
+        });
     
     // Feature Navigation
     const featureNavBtns = document.querySelectorAll('.feature-nav-btn');
@@ -391,6 +456,22 @@ Visit [thordata.com](https://www.thordata.com) to learn more.`,
         });
     });
 });
+
+// FAQ Toggle
+function toggleFaq(button) {
+    const faqItem = button.closest('.faq-item');
+    const isActive = faqItem.classList.contains('active');
+    
+    // Close all FAQ items
+    document.querySelectorAll('.faq-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Open clicked item if it wasn't active
+    if (!isActive) {
+        faqItem.classList.add('active');
+    }
+}
 
 // Copy code functionality
 function addCopyButtons() {

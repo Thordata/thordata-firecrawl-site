@@ -39,6 +39,12 @@
             
             <!-- Live Demo Playground -->
             <div class="hero-demo">
+                <div class="demo-status-bar">
+                    <span class="status-badge status-success">[ 200 OK ]</span>
+                    <span class="status-badge status-info">[ .JSON ]</span>
+                    <span class="status-badge status-action">[ SCRAPE ]</span>
+                    <span class="status-badge status-format" id="demo-format-badge">[ .MD ]</span>
+                </div>
                 <div class="demo-tabs">
                     <button class="demo-tab active" data-format="json">JSON</button>
                     <button class="demo-tab" data-format="markdown">Markdown</button>
@@ -48,6 +54,10 @@
                     <div class="demo-input">
                         <div class="demo-label">Scrape</div>
                         <div class="demo-url">https://www.thordata.com</div>
+                        <div class="demo-status" id="demo-status">
+                            <span class="status-indicator"></span>
+                            <span class="status-text">Scraping...</span>
+                        </div>
                     </div>
                     <div class="demo-output" id="hero-demo-output">
                         <pre><code id="demo-code">{
@@ -73,7 +83,26 @@
     <!-- Trust Badge -->
     <section class="trust-badge">
         <div class="container">
-            <p class="trust-text">Open source • Self-hostable • Firecrawl-compatible</p>
+            <div class="trust-content">
+                <div class="trust-stats">
+                    <a href="https://github.com/Thordata/thordata-firecrawl" target="_blank" class="trust-stat">
+                        <span class="trust-icon">⭐</span>
+                        <span class="trust-number" id="github-stars">Loading...</span>
+                        <span class="trust-label">GitHub Stars</span>
+                    </a>
+                    <div class="trust-stat">
+                        <span class="trust-icon">🔓</span>
+                        <span class="trust-number">100%</span>
+                        <span class="trust-label">Open Source</span>
+                    </div>
+                    <div class="trust-stat">
+                        <span class="trust-icon">🚀</span>
+                        <span class="trust-number">Self-hostable</span>
+                        <span class="trust-label">Deploy Anywhere</span>
+                    </div>
+                </div>
+                <p class="trust-text">Open source • Self-hostable • Firecrawl-compatible</p>
+            </div>
         </div>
     </section>
 
@@ -547,6 +576,69 @@ console.log(data.data.markdown);</code></pre>
             </div>
             <div class="integrations-cta">
                 <a href="https://github.com/Thordata/thordata-firecrawl" target="_blank" class="btn btn-primary">View All Integrations</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq">
+        <div class="container">
+            <h2 class="section-title">Frequently Asked Questions</h2>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>What is Thordata Firecrawl?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Thordata Firecrawl is a Firecrawl-compatible web scraping API that turns websites into LLM-ready data. It provides clean Markdown, JSON, HTML, and screenshots from any website, making it perfect for AI applications, RAG systems, and data pipelines.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>How is it different from Firecrawl?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Thordata Firecrawl is designed to be API-compatible with Firecrawl, making migration easy. It's powered by Thordata's web data infrastructure and is fully open-source (MIT license) and self-hostable. You can deploy it anywhere without vendor lock-in.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>Is it free to use?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes! Thordata Firecrawl is open-source and free to self-host. You only need a Thordata API key for the underlying scraping infrastructure. The code itself is MIT-licensed and can be used in commercial projects.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>Can I deploy it to the cloud?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Absolutely! We provide Docker support and a Render Blueprint (`render.yaml`) for one-click cloud deployment. You can also deploy to any platform that supports Python/Docker, including AWS, GCP, Azure, Fly.io, and more.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>What formats does it support?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Thordata Firecrawl supports Markdown (LLM-ready), JSON (structured data), HTML (raw), and screenshots. You can request multiple formats in a single API call.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>Does it handle JavaScript-heavy websites?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes! Thordata's infrastructure handles JavaScript-rendered content automatically. You don't need to configure anything - it just works.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
