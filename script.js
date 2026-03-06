@@ -439,6 +439,25 @@ Visit [thordata.com](https://www.thordata.com) to learn more.`,
             }
         });
     
+    // Mobile Navigation Toggle
+    const navToggle = document.getElementById('nav-toggle');
+    const navLinks = document.getElementById('nav-links');
+    
+    if (navToggle && navLinks) {
+        navToggle.addEventListener('click', function() {
+            navToggle.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+        
+        // Close mobile menu when clicking a link
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function() {
+                navToggle.classList.remove('active');
+                navLinks.classList.remove('active');
+            });
+        });
+    }
+    
     // Feature Navigation
     const featureNavBtns = document.querySelectorAll('.feature-nav-btn');
     const featureDetails = document.querySelectorAll('.feature-detail');
