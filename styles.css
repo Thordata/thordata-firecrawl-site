@@ -301,6 +301,7 @@ body {
     gap: 3rem;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .trust-stat {

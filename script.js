@@ -308,6 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const demoCode = document.getElementById('demo-code');
     const demoStatus = document.getElementById('demo-status');
     const demoFormatBadge = document.getElementById('demo-format-badge');
+    const demoFormatBadgeMain = document.getElementById('demo-format-badge-main');
     
     const demoContent = {
         json: `{
@@ -350,6 +351,12 @@ Visit [thordata.com](https://www.thordata.com) to learn more.`,
         html: '[ .HTML ]'
     };
     
+    const formatBadgesMain = {
+        json: '[ .JSON ]',
+        markdown: '[ .MD ]',
+        html: '[ .HTML ]'
+    };
+    
     // Simulate scraping animation
     function simulateScraping(format) {
         demoStatus.classList.remove('completed');
@@ -373,9 +380,12 @@ Visit [thordata.com](https://www.thordata.com) to learn more.`,
             this.classList.add('active');
             const format = this.getAttribute('data-format');
             
-            // Update format badge
+            // Update format badges
             if (demoFormatBadge) {
-                demoFormatBadge.textContent = formatBadges[format] || '[ .JSON ]';
+                demoFormatBadge.textContent = formatBadges[format] || '[ .MD ]';
+            }
+            if (demoFormatBadgeMain) {
+                demoFormatBadgeMain.textContent = formatBadgesMain[format] || '[ .JSON ]';
             }
             
             // Simulate scraping
@@ -399,20 +409,33 @@ Visit [thordata.com](https://www.thordata.com) to learn more.`,
         }
     }, 8000);
     
-    // Load GitHub stars
+    // Load GitHub stars (only show if >= 50 stars to avoid showing low numbers)
     fetch('https://api.github.com/repos/Thordata/thordata-firecrawl')
         .then(response => response.json())
         .then(data => {
+            const githubStat = document.getElementById('github-stat');
             const starsEl = document.getElementById('github-stars');
-            if (starsEl && data.stargazers_count) {
+            if (githubStat && starsEl && data.stargazers_count) {
                 const count = data.stargazers_count;
-                starsEl.textContent = count >= 1000 ? (count / 1000).toFixed(1) + 'K' : count;
+                if (count >= 50) {
+                    starsEl.textContent = count >= 1000 ? (count / 1000).toFixed(1) + 'K' : count;
+                    githubStat.style.display = 'flex';
+                } else {
+                    // Hide the GitHub stars stat if less than 50 stars
+                    githubStat.style.display = 'none';
+                }
+            } else {
+                // Hide if API fails or no stars
+                if (githubStat) {
+                    githubStat.style.display = 'none';
+                }
             }
         })
         .catch(err => {
-            const starsEl = document.getElementById('github-stars');
-            if (starsEl) {
-                starsEl.textContent = '⭐';
+            const githubStat = document.getElementById('github-stat');
+            // Hide GitHub stars stat on error
+            if (githubStat) {
+                githubStat.style.display = 'none';
             }
         });
     
