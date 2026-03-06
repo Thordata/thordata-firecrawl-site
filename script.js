@@ -169,16 +169,117 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
             return;
         }
         
-        // Format response
-        const formatted = JSON.stringify(data, null, 2);
+        // Format response with smart markdown/html handling
         const statusClass = response.ok ? 'var(--success-color)' : 'var(--error-color)';
         const statusIcon = response.ok ? '✅' : '❌';
         
-        responseOutput.innerHTML = `<code style="color: ${statusClass};">
-${statusIcon} Status: ${response.status} ${response.statusText}
-
-${formatted}
-</code>`;
+        // Check if response contains markdown or html
+        let hasMarkdown = false;
+        let hasHtml = false;
+        let markdownContent = '';
+        let htmlContent = '';
+        
+        if (data.data) {
+            if (data.data.markdown) {
+                hasMarkdown = true;
+                markdownContent = data.data.markdown;
+            }
+            if (data.data.html) {
+                hasHtml = true;
+                htmlContent = data.data.html;
+            }
+        }
+        
+        // Build response HTML with format tabs
+        let responseHtml = `
+<div class="response-status" style="color: ${statusClass}; margin-bottom: 1rem;">
+    ${statusIcon} Status: ${response.status} ${response.statusText}
+</div>`;
+        
+        if (hasMarkdown || hasHtml) {
+            // Add format tabs
+            responseHtml += `
+<div class="response-format-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+    <button class="format-tab-btn active" data-format="json" onclick="switchResponseFormat('json')">JSON</button>
+    ${hasMarkdown ? '<button class="format-tab-btn" data-format="markdown" onclick="switchResponseFormat(\'markdown\')">Markdown</button>' : ''}
+    ${hasHtml ? '<button class="format-tab-btn" data-format="html" onclick="switchResponseFormat(\'html\')">HTML</button>' : ''}
+</div>`;
+            
+            // Add content containers
+            const formattedJson = JSON.stringify(data, null, 2);
+            responseHtml += `
+<div id="response-json" class="response-format-content active">
+    <pre><code>${escapeHtml(formattedJson)}</code></pre>
+    <button class="download-btn" data-format="json" data-content="${escapeHtml(formattedJson).replace(/"/g, '&quot;')}" title="Download as JSON">📥 Download JSON</button>
+</div>`;
+            
+            if (hasMarkdown) {
+                // Store markdown content in a data attribute for download (base64 encoded to avoid escaping issues)
+                const markdownBase64 = btoa(unescape(encodeURIComponent(markdownContent)));
+                responseHtml += `
+<div id="response-markdown" class="response-format-content" style="display: none;">
+    <pre><code class="markdown-content">${escapeHtml(markdownContent)}</code></pre>
+    <button class="download-btn" data-format="markdown" data-content-base64="${markdownBase64}" title="Download as Markdown">📥 Download Markdown</button>
+</div>`;
+            }
+            
+            if (hasHtml) {
+                // Store HTML content in a data attribute for download (base64 encoded)
+                const htmlBase64 = btoa(unescape(encodeURIComponent(htmlContent)));
+                responseHtml += `
+<div id="response-html" class="response-format-content" style="display: none;">
+    <pre><code class="html-content">${escapeHtml(htmlContent)}</code></pre>
+    <button class="download-btn" data-format="html" data-content-base64="${htmlBase64}" title="Download as HTML">📥 Download HTML</button>
+</div>`;
+            }
+            
+            // Store response data globally for format switching and download
+            window.lastResponseData = {
+                json: formattedJson,
+                markdown: hasMarkdown ? markdownContent : null,
+                html: hasHtml ? htmlContent : null
+            };
+        } else {
+            // No markdown/html, just show JSON
+            const formatted = JSON.stringify(data, null, 2);
+            responseHtml += `
+<div class="response-format-content">
+    <pre><code>${escapeHtml(formatted)}</code></pre>
+    <button class="download-btn" data-format="json" data-content="${escapeHtml(formatted).replace(/"/g, '&quot;')}" title="Download as JSON">📥 Download JSON</button>
+</div>`;
+            window.lastResponseData = { json: formatted };
+        }
+        
+        responseOutput.innerHTML = responseHtml;
+        
+        // Attach download button event listeners
+        responseOutput.querySelectorAll('.download-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const format = this.getAttribute('data-format');
+                let content;
+                
+                // Check if content is base64 encoded (for markdown/html)
+                const base64Content = this.getAttribute('data-content-base64');
+                if (base64Content) {
+                    // Decode base64
+                    try {
+                        content = decodeURIComponent(escape(atob(base64Content)));
+                    } catch (e) {
+                        console.error('Failed to decode base64 content:', e);
+                        content = this.getAttribute('data-content') || '';
+                    }
+                } else {
+                    // Regular content (JSON)
+                    content = this.getAttribute('data-content');
+                    // Decode HTML entities
+                    const div = document.createElement('div');
+                    div.innerHTML = content;
+                    content = div.textContent || div.innerText || content;
+                }
+                
+                downloadResponse(format, content);
+            });
+        });
     } catch (error) {
         let errorMsg = error.message;
         if (error.name === 'AbortError') {
@@ -344,6 +445,65 @@ function addCopyButtons() {
 function clearResponse() {
     const responseOutput = document.getElementById('response-output');
     responseOutput.innerHTML = '<code class="response-placeholder">// 1. Enter your API Key above\n// 2. Click "Load Example" to auto-fill request\n// 3. Click "Send Request" or press Ctrl/Cmd + Enter\n// \n// Response will appear here...</code>';
+    window.lastResponseData = null;
+}
+
+// Escape HTML for safe display
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Switch response format (JSON/Markdown/HTML)
+function switchResponseFormat(format) {
+    // Hide all format contents
+    document.querySelectorAll('.response-format-content').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.format-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected format
+    const contentEl = document.getElementById(`response-${format}`);
+    if (contentEl) {
+        contentEl.style.display = 'block';
+    }
+    
+    // Activate selected tab
+    const tabBtn = document.querySelector(`.format-tab-btn[data-format="${format}"]`);
+    if (tabBtn) {
+        tabBtn.classList.add('active');
+    }
+}
+
+// Download response as file
+function downloadResponse(format, content) {
+    // Get timestamp for filename
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    let filename = `thordata-firecrawl-${timestamp}.${format}`;
+    let mimeType = 'text/plain';
+    
+    if (format === 'json') {
+        mimeType = 'application/json';
+    } else if (format === 'markdown') {
+        mimeType = 'text/markdown';
+    } else if (format === 'html') {
+        mimeType = 'text/html';
+    }
+    
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 // Smooth scrolling

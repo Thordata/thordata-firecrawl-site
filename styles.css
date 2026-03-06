@@ -497,6 +497,80 @@ code.loading {
     }
 }
 
+/* Response format tabs */
+.response-format-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.format-tab-btn {
+    padding: 0.5rem 1rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    margin-bottom: -1px;
+}
+
+.format-tab-btn:hover {
+    color: var(--primary-color);
+}
+
+.format-tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.response-format-content {
+    position: relative;
+}
+
+.response-format-content pre {
+    margin-bottom: 0.5rem;
+}
+
+.response-format-content pre code {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.response-format-content pre code.markdown-content,
+.response-format-content pre code.html-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+/* Download button */
+.download-btn {
+    margin-top: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.download-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.response-status {
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
 /* Playground Section */
 .playground {
     padding: 5rem 0;
