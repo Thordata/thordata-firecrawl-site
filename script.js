@@ -195,6 +195,21 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
 <div class="response-status" style="color: ${statusClass}; margin-bottom: 1rem;">
     ${statusIcon} Status: ${response.status} ${response.statusText}
 </div>`;
+
+        // Helpful guidance for common HTTP errors
+        if (!response.ok) {
+            let helpMsg = '';
+            if (response.status === 401 || response.status === 403) {
+                helpMsg = 'Auth issue: please use your own API key from https://dashboard.thordata.com and ensure Authorization header uses Bearer token.';
+            } else if (response.status === 429) {
+                helpMsg = 'Rate limited: please retry after a short delay or reduce request frequency.';
+            } else if (response.status >= 500) {
+                helpMsg = 'Server issue or cold start: please retry in 5-10 seconds.';
+            }
+            if (helpMsg) {
+                responseHtml += `<div class="response-help">💡 ${helpMsg}</div>`;
+            }
+        }
         
         if (hasMarkdown || hasHtml) {
             // Add format tabs
@@ -286,15 +301,31 @@ ${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
             errorMsg = 'Request timeout (30s). The server may be slow or unreachable.';
         }
         
-        responseOutput.innerHTML = `<code style="color: var(--error-color);">
-❌ Error: ${errorMsg}
-
+        let troubleshooting = `
 Troubleshooting:
 1. Check if the API server is running
 2. Verify the API URL is correct
 3. Ensure CORS is enabled (for cross-origin requests)
 4. Check your API key is valid
-5. Verify the request body is valid JSON
+5. Verify the request body is valid JSON`;
+
+        if (/401|unauthorized|forbidden/i.test(errorMsg)) {
+            troubleshooting = `
+Troubleshooting (Auth):
+1. Ensure you are using your own Thordata API key
+2. Get API key from https://dashboard.thordata.com
+3. Ensure header format is: Authorization: Bearer <YOUR_KEY>`;
+        } else if (/timeout/i.test(errorMsg)) {
+            troubleshooting = `
+Troubleshooting (Timeout):
+1. Free tier may cold start, wait and retry
+2. Reduce crawl depth/limit for heavy requests
+3. Retry after 5-10 seconds`;
+        }
+
+        responseOutput.innerHTML = `<code style="color: var(--error-color);">
+❌ Error: ${errorMsg}
+${troubleshooting}
 </code>`;
     } finally {
         sendBtn.disabled = false;
