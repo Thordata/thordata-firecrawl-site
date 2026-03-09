@@ -168,14 +168,16 @@ function copyCurrentCurl() {
 
 async function runPreflightCheck() {
     const apiKey = document.getElementById('api-key').value.trim();
-    const apiUrl = document.getElementById('api-url').value.trim();
+    const apiUrlRaw = document.getElementById('api-url').value.trim();
     const responseOutput = document.getElementById('response-output');
     const preflightBtn = document.getElementById('preflight-btn');
 
-    if (!apiKey || !apiUrl) {
+    if (!apiKey || !apiUrlRaw) {
         responseOutput.innerHTML = '<code style="color: var(--error-color);">Preflight failed: please fill API key and API URL first.</code>';
         return;
     }
+
+    const apiUrl = apiUrlRaw.replace(/\/+$/, '');
 
     const original = preflightBtn ? preflightBtn.textContent : '';
     if (preflightBtn) {
@@ -185,22 +187,32 @@ async function runPreflightCheck() {
 
     const startedAt = performance.now();
     try {
-        const healthResp = await fetch(`${apiUrl}/health`);
+        const healthController = new AbortController();
+        const healthTimeout = setTimeout(() => healthController.abort(), 10000);
+        const healthResp = await fetch(`${apiUrl}/health`, { signal: healthController.signal });
+        clearTimeout(healthTimeout);
         const healthText = await healthResp.text();
         const elapsed = Math.round(performance.now() - startedAt);
 
         let checkResp;
         try {
+            const checkController = new AbortController();
+            const checkTimeout = setTimeout(() => checkController.abort(), 15000);
             checkResp = await fetch(`${apiUrl}/v1/scrape`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ url: 'https://www.thordata.com', formats: ['json'] })
+                body: JSON.stringify({ url: 'https://www.thordata.com', formats: ['markdown'] }),
+                signal: checkController.signal
             });
+            clearTimeout(checkTimeout);
         } catch (e) {
-            responseOutput.innerHTML = `<code style="color: var(--error-color);">❌ Preflight failed: ${e.message}</code>`;
+            const msg = e?.name === 'AbortError'
+                ? 'Preflight timed out. Server may be down/cold-starting, or blocked by network/CORS.'
+                : (e?.message || String(e));
+            responseOutput.innerHTML = `<code style="color: var(--error-color);">❌ Preflight failed: ${escapeHtml(msg)}</code>`;
             return;
         }
 
@@ -255,27 +267,50 @@ function copyResponseJson() {
 // Send API request
 async function sendRequest() {
     const apiKey = document.getElementById('api-key').value.trim();
-    const apiUrl = document.getElementById('api-url').value.trim();
+    const apiUrlRaw = document.getElementById('api-url').value.trim();
     const endpoint = document.getElementById('endpoint').value;
     const requestBody = document.getElementById('request-body').value;
     const responseOutput = document.getElementById('response-output');
     
-    // Validation
+    // Enhanced validation with detailed error messages
     if (!apiKey) {
-        responseOutput.innerHTML = '<code style="color: var(--error-color);">Error: Please enter your API key</code>';
+        responseOutput.innerHTML = `<code style="color: var(--error-color);">
+❌ <strong>Missing API Key</strong>
+
+Please enter your Thordata API key.
+Get one from: <a href="https://dashboard.thordata.com" target="_blank">https://dashboard.thordata.com</a>
+
+Required token types:
+- For Scrape/Crawl/Map: THORDATA_SCRAPER_TOKEN (or THORDATA_API_KEY)
+- For Agent: Also need OPENAI_API_KEY on the server
+        </code>`;
         return;
     }
     
-    if (!apiUrl) {
-        responseOutput.innerHTML = '<code style="color: var(--error-color);">Error: Please enter API URL</code>';
+    if (!apiUrlRaw) {
+        responseOutput.innerHTML = `<code style="color: var(--error-color);">
+❌ <strong>Missing API URL</strong>
+
+Please enter the API URL. Try:
+- Cloud (Render): https://thordata-firecrawl-api.onrender.com
+- Local: http://localhost:3002
+        </code>`;
         return;
     }
+
+    const apiUrl = apiUrlRaw.replace(/\/+$/, '');
     
     let body;
     try {
         body = JSON.parse(requestBody);
     } catch (e) {
-        responseOutput.innerHTML = `<code style="color: var(--error-color);">Error: Invalid JSON in request body\n${e.message}</code>`;
+        responseOutput.innerHTML = `<code style="color: var(--error-color);">
+❌ <strong>Invalid JSON</strong>
+
+${e.message}
+
+Please check your JSON syntax. Use a JSON formatter/linter.
+        </code>`;
         return;
     }
     
@@ -290,7 +325,7 @@ async function sendRequest() {
     
     try {
         const startedAt = performance.now();
-        const url = `${apiUrl}${endpoint}`;
+        const url = `${apiUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
         
@@ -305,121 +340,136 @@ async function sendRequest() {
         });
         
         clearTimeout(timeoutId);
+        const elapsed = Math.round(performance.now() - startedAt);
         
-        let data;
-        try {
-            data = await response.json();
-        } catch (e) {
-            const text = await response.text();
-            responseOutput.innerHTML = `<code style="color: var(--error-color);">
-Status: ${response.status} ${response.statusText}
+        const text = await response.text();
 
-Response (not JSON):
-${text.substring(0, 500)}${text.length > 500 ? '...' : ''}
-</code>`;
-            sendBtn.disabled = false;
-            sendBtn.textContent = originalText;
+        let parsed = null;
+        try {
+            parsed = JSON.parse(text);
+        } catch {
+            parsed = null;
+        }
+
+        const formattedJson = parsed ? JSON.stringify(parsed, null, 2) : text;
+        window.lastResponseData = { json: formattedJson, status: response.status };
+        
+        const isSuccess = response.ok;
+        
+        if (!isSuccess) {
+            // Parse error details if possible
+            let errorDetail = '';
+            try {
+                const errorJson = parsed ?? JSON.parse(text);
+                errorDetail = errorJson.detail || errorJson.error || JSON.stringify(errorJson, null, 2);
+            } catch {
+                errorDetail = text;
+            }
+            
+            // Common error patterns with troubleshooting tips
+            let troubleshootingTips = '';
+            if (response.status === 401 || response.status === 403) {
+                troubleshootingTips = `
+<strong>🔐 Authentication Failed</strong>
+- Verify your API key is correct
+- Check if you're using THORDATA_SCRAPER_TOKEN for scrape operations
+- Ensure the API key hasn't expired
+- Get a new key from: https://dashboard.thordata.com`;
+            } else if (response.status === 429) {
+                const retryAfter = response.headers.get('Retry-After') || '60';
+                troubleshootingTips = `
+<strong>⏱ Rate Limit Exceeded</strong>
+- Please wait ${retryAfter} seconds before retrying
+- Default limits: 60 req/min per token, 120 req/min per IP
+- Consider upgrading your plan for higher limits`;
+            } else if (response.status === 500 || response.status === 502 || response.status === 503) {
+                troubleshootingTips = `
+<strong>🔧 Server Error</strong>
+- The API server encountered an error
+- Check /health endpoint for server status
+- If using Render: free tier may have cold starts (15-30s delay)
+- Try again in a few moments`;
+            } else if (response.status === 400) {
+                troubleshootingTips = `
+<strong>📝 Bad Request</strong>
+- Check your request body format
+- Verify all required fields are present
+- Ensure URLs are valid and properly formatted`;
+            }
+            
+            responseOutput.innerHTML = `<code style="color: var(--error-color);">
+❌ <strong>Request Failed: ${response.status} ${response.statusText}</strong>
+
+⏱ Response time: ${elapsed}ms
+📍 Endpoint: ${endpoint}
+
+<strong>Error Details:</strong>
+${errorDetail.substring(0, 800)}${errorDetail.length > 800 ? '...' : ''}
+
+${troubleshootingTips}
+        </code>`;
             return;
         }
         
-        // Format response with smart markdown/html handling
-        const statusClass = response.ok ? 'var(--success-color)' : 'var(--error-color)';
-        const statusIcon = response.ok ? '✅' : '❌';
-        
-        // Check if response contains markdown or html
-        let hasMarkdown = false;
-        let hasHtml = false;
-        let markdownContent = '';
-        let htmlContent = '';
-        
-        if (data.data) {
-            if (data.data.markdown) {
-                hasMarkdown = true;
-                markdownContent = data.data.markdown;
-            }
-            if (data.data.html) {
-                hasHtml = true;
-                htmlContent = data.data.html;
-            }
+        // Success path: render JSON + (optional) markdown/html tabs if present.
+        let markdownContent = null;
+        let htmlContent = null;
+        if (parsed && parsed.data) {
+            if (typeof parsed.data.markdown === 'string') markdownContent = parsed.data.markdown;
+            if (typeof parsed.data.html === 'string') htmlContent = parsed.data.html;
         }
         
-        const elapsedMs = Math.round(performance.now() - startedAt);
-
-        // Build response HTML with format tabs
-        let responseHtml = `
-<div class="response-status" style="color: ${statusClass}; margin-bottom: 1rem;">
-    ${statusIcon} Status: ${response.status} ${response.statusText} · ${elapsedMs} ms
+        const okHtml = `<div class="response-status" style="color: var(--success-color); margin-bottom: 1rem;">
+✅ Status: ${response.status} ${response.statusText} · ${elapsed} ms
 </div>`;
 
-        // Helpful guidance for common HTTP errors
-        if (!response.ok) {
-            let helpMsg = '';
-            if (response.status === 401 || response.status === 403) {
-                helpMsg = 'Auth issue: please use your own API key from https://dashboard.thordata.com and ensure Authorization header uses Bearer token.';
-            } else if (response.status === 429) {
-                helpMsg = 'Rate limited: please retry after a short delay or reduce request frequency.';
-            } else if (response.status >= 500) {
-                helpMsg = 'Server issue or cold start: please retry in 5-10 seconds.';
-            }
-            if (helpMsg) {
-                responseHtml += `<div class="response-help">💡 ${helpMsg}</div>`;
-            }
-        }
-        
+        let responseHtml = okHtml;
+
+        const hasMarkdown = typeof markdownContent === 'string' && markdownContent.length > 0;
+        const hasHtml = typeof htmlContent === 'string' && htmlContent.length > 0;
+
         if (hasMarkdown || hasHtml) {
-            // Add format tabs
             responseHtml += `
 <div class="response-format-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
-    <button class="format-tab-btn active" data-format="json" onclick="switchResponseFormat('json')">JSON</button>
-    ${hasMarkdown ? '<button class="format-tab-btn" data-format="markdown" onclick="switchResponseFormat(\'markdown\')">Markdown</button>' : ''}
-    ${hasHtml ? '<button class="format-tab-btn" data-format="html" onclick="switchResponseFormat(\'html\')">HTML</button>' : ''}
+  <button class="format-tab-btn active" data-format="json" onclick="switchResponseFormat('json')">JSON</button>
+  ${hasMarkdown ? `<button class="format-tab-btn" data-format="markdown" onclick="switchResponseFormat('markdown')">Markdown</button>` : ''}
+  ${hasHtml ? `<button class="format-tab-btn" data-format="html" onclick="switchResponseFormat('html')">HTML</button>` : ''}
 </div>`;
-            
-            // Add content containers
-            const formattedJson = JSON.stringify(data, null, 2);
-            responseHtml += `
-<div id="response-json" class="response-format-content active">
-    <pre><code>${escapeHtml(formattedJson)}</code></pre>
-    <button class="download-btn" data-format="json" data-content="${escapeHtml(formattedJson).replace(/"/g, '&quot;')}" title="Download as JSON">📥 Download JSON</button>
-</div>`;
-            
-            if (hasMarkdown) {
-                // Store markdown content in a data attribute for download (base64 encoded to avoid escaping issues)
-                const markdownBase64 = btoa(unescape(encodeURIComponent(markdownContent)));
-                responseHtml += `
-<div id="response-markdown" class="response-format-content" style="display: none;">
-    <pre><code class="markdown-content">${escapeHtml(markdownContent)}</code></pre>
-    <button class="download-btn" data-format="markdown" data-content-base64="${markdownBase64}" title="Download as Markdown">📥 Download Markdown</button>
-</div>`;
-            }
-            
-            if (hasHtml) {
-                // Store HTML content in a data attribute for download (base64 encoded)
-                const htmlBase64 = btoa(unescape(encodeURIComponent(htmlContent)));
-                responseHtml += `
-<div id="response-html" class="response-format-content" style="display: none;">
-    <pre><code class="html-content">${escapeHtml(htmlContent)}</code></pre>
-    <button class="download-btn" data-format="html" data-content-base64="${htmlBase64}" title="Download as HTML">📥 Download HTML</button>
-</div>`;
-            }
-            
-            // Store response data globally for format switching and download
-            window.lastResponseData = {
-                json: formattedJson,
-                markdown: hasMarkdown ? markdownContent : null,
-                html: hasHtml ? htmlContent : null
-            };
-        } else {
-            // No markdown/html, just show JSON
-            const formatted = JSON.stringify(data, null, 2);
-            responseHtml += `
-<div class="response-format-content">
-    <pre><code>${escapeHtml(formatted)}</code></pre>
-    <button class="download-btn" data-format="json" data-content="${escapeHtml(formatted).replace(/"/g, '&quot;')}" title="Download as JSON">📥 Download JSON</button>
-</div>`;
-            window.lastResponseData = { json: formatted };
         }
-        
+
+        responseHtml += `
+<div id="response-json" class="response-format-content" style="display: block;">
+  <pre><code>${escapeHtml(formattedJson)}</code></pre>
+</div>`;
+
+        if (hasMarkdown) {
+            const markdownBase64 = btoa(unescape(encodeURIComponent(markdownContent)));
+            responseHtml += `
+<div id="response-markdown" class="response-format-content" style="display: none;">
+  <pre><code class="markdown-content">${escapeHtml(markdownContent)}</code></pre>
+  <button class="download-btn" data-format="markdown" data-content-base64="${markdownBase64}" title="Download as Markdown">📥 Download Markdown</button>
+</div>`;
+        }
+
+        if (hasHtml) {
+            const htmlBase64 = btoa(unescape(encodeURIComponent(htmlContent)));
+            responseHtml += `
+<div id="response-html" class="response-format-content" style="display: none;">
+  <pre><code class="html-content">${escapeHtml(htmlContent)}</code></pre>
+  <button class="download-btn" data-format="html" data-content-base64="${htmlBase64}" title="Download as HTML">📥 Download HTML</button>
+</div>`;
+        }
+
+        // Always provide JSON download button
+        responseHtml += `<button class="download-btn" data-format="json" data-content="${escapeHtml(formattedJson).replace(/"/g, '&quot;')}" title="Download as JSON">📥 Download JSON</button>`;
+
+        window.lastResponseData = {
+            json: formattedJson,
+            markdown: hasMarkdown ? markdownContent : null,
+            html: hasHtml ? htmlContent : null,
+            status: response.status,
+        };
+
         responseOutput.innerHTML = responseHtml;
         
         // Attach download button event listeners
